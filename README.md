@@ -14,4 +14,4 @@ The Reya Risk Matrix provides immediate transparency into active perpetual marke
 ## 🚀 Quick Start (Local Run)
 1. Clone this repository:
    ```bash
-   git clone [https://github.com/](https://github.com/)<your-username>/reya-risk-matrix.git
+   git clone [https://github.com/feroz468/reya-risk-matrix.git](https://github.com/feroz468/reya-risk-matrix.git)
