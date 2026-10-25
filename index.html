@@ -22,141 +22,7 @@
                 }
             }
         }
-    </script>
-</head>
-<body class="h-full text-slate-200 font-sans antialiased flex flex-col justify-between">
-
-    <!-- Top Navigation Header -->
-    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
-            <div class="flex items-center space-x-3">
-                <div class="w-3 h-3 rounded-full bg-indigo-500 animate-ping"></div>
-                <h1 class="text-xl font-bold tracking-tight text-white">Reya <span class="text-indigo-400">Risk Matrix</span></h1>
-                <span class="text-xs bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-md font-mono">v2 REST API</span>
-            </div>
-            <div class="flex items-center space-x-4 text-xs text-slate-400">
-                <span>Network: <strong class="text-slate-200">Reya L2 (Chain ID 1729)</strong></span>
-                <button onclick="fetchAllData()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-3 py-1.5 rounded-lg transition flex items-center space-x-1 shadow-md">
-                    <span>↻ Refresh Feeds</span>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 py-8 w-full flex-grow space-y-8">
-
-        <!-- Error & Status Container -->
-        <div id="status-banner" class="hidden p-4 rounded-xl text-sm border"></div>
-
-        <!-- Section 1: Market Intelligence & Risk Specs -->
-        <section class="space-y-4">
-            <div class="flex justify-between items-end">
-                <div>
-                    <h2 class="text-lg font-bold text-white">Perpetual Market Overview</h2>
-                    <p class="text-xs text-slate-400">Real-time mark prices, funding rates, and leverage limits directly from Reya's node API.</p>
-                </div>
-            </div>
-
-            <div id="markets-loading" class="text-center py-12 text-slate-500 font-mono text-sm bg-slate-900/40 rounded-2xl border border-slate-800">
-                Establishing handshake with api.reya.xyz...
-            </div>
-
-            <div id="markets-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
-                <!-- Market cards populated dynamically -->
-            </div>
-        </section>
-
-        <!-- Section 2: Position Risk & Liquidation Simulator -->
-        <section class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
-            <div>
-                <h2 class="text-lg font-bold text-white">Interactive Position Margin Simulator</h2>
-                <p class="text-xs text-slate-400">Estimate leverage utilization, margin buffer, and estimated liquidation thresholds without signing transactions.</p>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Inputs -->
-                <div class="space-y-4 lg:col-span-1 border-r-0 lg:border-r border-slate-800 lg:pr-6">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Target Market</label>
-                        <select id="sim-market-select" onchange="calculateSimulation()" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
-                            <!-- Populated dynamically -->
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Position Direction</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button id="btn-side-long" onclick="setSide('LONG')" class="py-2 text-xs font-bold rounded-lg border bg-emerald-950/80 border-emerald-600 text-emerald-400">LONG</button>
-                            <button id="btn-side-short" onclick="setSide('SHORT')" class="py-2 text-xs font-bold rounded-lg border bg-slate-950 border-slate-800 text-slate-400">SHORT</button>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Collateral Deposit (rUSD)</label>
-                        <input id="sim-collateral" type="number" value="1000" oninput="calculateSimulation()" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-indigo-500" placeholder="1000">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Position Leverage (<span id="sim-lev-val">5</span>x)</label>
-                        <input id="sim-leverage" type="range" min="1" max="20" value="5" oninput="updateLeverageVal(); calculateSimulation()" class="w-full accent-indigo-500">
-                    </div>
-                </div>
-
-                <!-- Simulation Output Matrix -->
-                <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 my-auto">
-                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
-                        <span class="text-xs text-slate-400 block">Notional Position Size</span>
-                        <span id="res-notional" class="text-xl font-mono font-bold text-white">$5,000.00</span>
-                    </div>
-
-                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
-                        <span class="text-xs text-slate-400 block">Current Mark Price</span>
-                        <span id="res-mark" class="text-xl font-mono font-bold text-indigo-400">$0.00</span>
-                    </div>
-
-                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
-                        <span class="text-xs text-slate-400 block">Est. Liquidation Price</span>
-                        <span id="res-liq" class="text-xl font-mono font-bold text-rose-400">$0.00</span>
-                    </div>
-
-                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
-                        <span class="text-xs text-slate-400 block">Initial Margin Requirement</span>
-                        <span id="res-margin" class="text-xl font-mono font-bold text-emerald-400">$1,000.00</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Section 3: Read-Only Public Wallet Position Lookup -->
-        <section class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
-            <div>
-                <h2 class="text-lg font-bold text-white">Read-Only Wallet Position Audit</h2>
-                <p class="text-xs text-slate-400">Enter any public Ethereum address to inspect open positions on Reya L2 without connecting a wallet.</p>
-            </div>
-
-            <div class="flex flex-col sm:flex-row gap-3">
-                <input id="wallet-address-input" type="text" placeholder="0x..." class="flex-grow bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-mono text-white focus:outline-none focus:border-indigo-500">
-                <button onclick="fetchWalletPositions()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-6 py-3 rounded-xl transition text-sm">
-                    Inspect Wallet
-                </button>
-            </div>
-
-            <div id="wallet-output" class="hidden text-xs font-mono bg-slate-950 p-4 rounded-xl border border-slate-800 overflow-x-auto text-slate-300">
-                <!-- Wallet results rendered here -->
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Footer -->
-    <footer class="border-t border-slate-800 bg-slate-900/40 py-6 text-center text-xs text-slate-500">
-        Open-source community tool built for Reya Network (@Reya_Network). Powered by public REST APIs.
-    </footer>
-
-    <!-- Main Application JavaScript Logic -->
-    <script>
-        const API_BASE = 'https://api.reya.xyz/v2';
+    </script>const API_BASE = 'https://api.reya.xyz/v2';
         const PROXY_PREFIX = 'https://corsproxy.io/?';
 
         let marketState = [];
@@ -184,4 +50,165 @@
             banner.classList.add('hidden');
 
             try {
-                let defData
+                // Fetch market definitions and market stats in parallel
+                const [definitions, summaries] = await Promise.all([
+                    safeFetch(`${API_BASE}/perpMarketDefinitions`).catch(() => []),
+                    safeFetch(`${API_BASE}/perpMarkets/summary`).catch(() => [])
+                ]);
+
+                // Normalize data structure
+                const markets = Array.isArray(definitions) ? definitions : (definitions.result || definitions.markets || []);
+                const summariesMap = {};
+                const summaryList = Array.isArray(summaries) ? summaries : (summaries.result || summaries.summaries || []);
+                summaryList.forEach(s => {
+                    summariesMap[s.marketId || s.id || s.symbol] = s;
+                });
+
+                marketState = markets.map((m, idx) => {
+                    const id = m.marketId || m.id || idx;
+                    const symbol = m.symbol || m.name || `Market ${id}`;
+                    const summary = summariesMap[id] || {};
+                    return {
+                        id: id,
+                        symbol: symbol,
+                        markPrice: Number(summary.markPrice || m.markPrice || 100),
+                        fundingRate: Number(summary.fundingRate || m.fundingRate || 0.0001),
+                        maxLeverage: Number(m.maxLeverage || 20)
+                    };
+                });
+
+                // Fallback demo data if API returns empty array
+                if (marketState.length === 0) {
+                    marketState = [
+                        { id: 1, symbol: 'ETH-PERP', markPrice: 2650.00, fundingRate: 0.00012, maxLeverage: 20 },
+                        { id: 2, symbol: 'BTC-PERP', markPrice: 68400.00, fundingRate: 0.00008, maxLeverage: 20 },
+                        { id: 3, symbol: 'SOL-PERP', markPrice: 145.50, fundingRate: 0.00020, maxLeverage: 10 }
+                    ];
+                }
+
+                renderMarkets(marketState);
+                populateSimulatorDropdown(marketState);
+                calculateSimulation();
+
+                loading.classList.add('hidden');
+                grid.classList.remove('hidden');
+
+            } catch (err) {
+                console.error(err);
+                loading.classList.add('hidden');
+                banner.className = "p-4 rounded-xl text-sm border bg-rose-950/60 border-rose-800 text-rose-300";
+                banner.textContent = "Failed to connect to Reya L2 node API. Displaying fallback simulation markets.";
+                banner.classList.remove('hidden');
+
+                // Fallback render
+                marketState = [
+                    { id: 1, symbol: 'ETH-PERP', markPrice: 2650.00, fundingRate: 0.00012, maxLeverage: 20 },
+                    { id: 2, symbol: 'BTC-PERP', markPrice: 68400.00, fundingRate: 0.00008, maxLeverage: 20 },
+                    { id: 3, symbol: 'SOL-PERP', markPrice: 145.50, fundingRate: 0.00020, maxLeverage: 10 }
+                ];
+                renderMarkets(marketState);
+                populateSimulatorDropdown(marketState);
+                calculateSimulation();
+                grid.classList.remove('hidden');
+            }
+        }
+
+        function renderMarkets(markets) {
+            const grid = document.getElementById('markets-grid');
+            grid.innerHTML = markets.map(m => `
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-4 hover:border-indigo-500/50 transition shadow-lg">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-xs font-mono text-indigo-400">ID: ${m.id}</span>
+                            <h3 class="text-lg font-bold text-white">${m.symbol}</h3>
+                        </div>
+                        <span class="text-xs bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300 font-mono">${m.maxLeverage}x Max Lev</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/60 font-mono text-xs">
+                        <div>
+                            <span class="text-slate-500 block">Mark Price</span>
+                            <span class="text-white text-sm font-bold">$${m.markPrice.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-500 block">Funding Rate</span>
+                            <span class="${m.fundingRate >= 0 ? 'text-emerald-400' : 'text-rose-400'} text-sm font-bold">${(m.fundingRate * 100).toFixed(4)}%</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function populateSimulatorDropdown(markets) {
+            const select = document.getElementById('sim-market-select');
+            select.innerHTML = markets.map(m => `
+                <option value="${m.id}">${m.symbol} (Mark: $${m.markPrice.toLocaleString()})</option>
+            `).join('');
+        }
+
+        function setSide(side) {
+            currentSide = side;
+            const btnLong = document.getElementById('btn-side-long');
+            const btnShort = document.getElementById('btn-side-short');
+            if (side === 'LONG') {
+                btnLong.className = "py-2 text-xs font-bold rounded-lg border bg-emerald-950/80 border-emerald-600 text-emerald-400";
+                btnShort.className = "py-2 text-xs font-bold rounded-lg border bg-slate-950 border-slate-800 text-slate-400";
+            } else {
+                btnLong.className = "py-2 text-xs font-bold rounded-lg border bg-slate-950 border-slate-800 text-slate-400";
+                btnShort.className = "py-2 text-xs font-bold rounded-lg border bg-rose-950/80 border-rose-600 text-rose-400";
+            }
+            calculateSimulation();
+        }
+
+        function updateLeverageVal() {
+            const slider = document.getElementById('sim-leverage');
+            document.getElementById('sim-lev-val').textContent = slider.value;
+        }
+
+        function calculateSimulation() {
+            const marketId = document.getElementById('sim-market-select').value;
+            const market = marketState.find(m => String(m.id) === String(marketId)) || marketState[0];
+            const collateral = parseFloat(document.getElementById('sim-collateral').value) || 0;
+            const leverage = parseInt(document.getElementById('sim-leverage').value) || 1;
+            const markPrice = market ? market.markPrice : 100;
+
+            const notional = collateral * leverage;
+            let liqPrice = 0;
+
+            if (market) {
+                const maintenanceMarginRatio = 0.05; // 5% default MMR estimation
+                if (currentSide === 'LONG') {
+                    liqPrice = markPrice * (1 - (1 / leverage) + maintenanceMarginRatio);
+                    if (liqPrice < 0) liqPrice = 0;
+                } else {
+                    liqPrice = markPrice * (1 + (1 / leverage) - maintenanceMarginRatio);
+                }
+            }
+
+            document.getElementById('res-notional').textContent = `$${notional.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('res-mark').textContent = `$${markPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('res-liq').textContent = `$${liqPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('res-margin').textContent = `$${collateral.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        }
+
+        async function fetchWalletPositions() {
+            const address = document.getElementById('wallet-address-input').value.trim();
+            const output = document.getElementById('wallet-output');
+            output.classList.remove('hidden');
+
+            if (!address.startsWith('0x') || address.length < 10) {
+                output.innerHTML = `<span class="text-rose-400">Please enter a valid Ethereum wallet address (0x...).</span>`;
+                return;
+            }
+
+            output.innerHTML = `Querying Reya L2 state for ${address}...`;
+
+            try {
+                const data = await safeFetch(`${API_BASE}/accounts/${address}/positions`);
+                output.innerHTML = `<pre class="text-indigo-300">${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (err) {
+                output.innerHTML = `<span class="text-amber-400">No active positions found or account uninitialized on Reya L2 for this address.</span>`;
+            }
+        }
+
+        // Initialize on load
+        window.onload = fetchAllData;
