@@ -331,37 +331,22 @@
                 return;
             }
 
-            output.innerHTML = `Querying Reya L2 positions for ${address}...`;
+            output.innerHTML = `Querying Reya L2 state for ${address}...`;
 
             try {
-                // Official Reya REST v2 wallet positions endpoint
-                const positionsData = await safeFetch(`${API_BASE}/wallet/${address}/positions`).catch(() => null);
-                const accountsData = await safeFetch(`${API_BASE}/wallet/${address}/accounts`).catch(() => null);
-
+                // Use safeFetch which automatically tries direct API, then falls back to CORS proxy
+                const positionsData = await safeFetch(`${API_BASE}/wallet/${address}/positions`);
+                
                 const positions = Array.isArray(positionsData) ? positionsData : (positionsData?.positions || positionsData?.result || []);
-                const accounts = Array.isArray(accountsData) ? accountsData : (accountsData?.accounts || accountsData?.result || []);
 
-                if ((!positions || positions.length === 0) && (!accounts || accounts.length === 0)) {
-                    output.innerHTML = `<span class="text-amber-400">No active positions or accounts currently open on Reya L2 for address ${address}.</span>`;
+                if (!positions || positions.length === 0) {
+                    output.innerHTML = `<span class="text-amber-400">No active positions currently open on Reya L2 for address ${address}. (The account may be uninitialized or positions are closed).</span>`;
                     return;
                 }
 
-                let html = `<div class="space-y-3">`;
-                if (accounts.length > 0) {
-                    html += `<div><strong class="text-indigo-400">Associated Margin Account(s):</strong><pre class="text-slate-300 mt-1 bg-slate-900 p-2 rounded">${JSON.stringify(accounts, null, 2)}</pre></div>`;
-                }
-                if (positions.length > 0) {
-                    html += `<div><strong class="text-emerald-400">Open Positions:</strong><pre class="text-slate-300 mt-1 bg-slate-900 p-2 rounded">${JSON.stringify(positions, null, 2)}</pre></div>`;
-                }
-                html += `</div>`;
-                output.innerHTML = html;
+                output.innerHTML = `<div class="space-y-2"><strong class="text-emerald-400">Open Positions Found:</strong><pre class="text-slate-300 mt-1 bg-slate-900 p-2 rounded">${JSON.stringify(positions, null, 2)}</pre></div>`;
 
             } catch (err) {
-                output.innerHTML = `<span class="text-rose-400">Unable to query positions for this address.</span>`;
+                output.innerHTML = `<span class="text-amber-400">No active positions found or account uninitialized on Reya L2 for this address.</span>`;
             }
         }
-
-        window.onload = fetchAllData;
-    </script>
-</body>
-</html>
