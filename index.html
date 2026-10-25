@@ -351,45 +351,30 @@
                     return;
                 }
 
-                let cardsHtml = positions.map(pos => {
+                let listHtml = positions.map(pos => {
                     const isLong = pos.side === 'B' || pos.side === 'LONG' || Number(pos.qty) > 0;
-                    const sideLabel = isLong ? 'LONG' : 'SHORT';
-                    const sideColor = isLong 
-                        ? 'bg-emerald-950/80 text-emerald-400 border-emerald-700/50' 
-                        : 'bg-rose-950/80 text-rose-400 border-rose-700/50';
+                    const sideDisplay = isLong ? '🟢 BUY / LONG' : '🔴 SELL / SHORT';
                     
                     const entryPrice = Number(pos.avgEntryPrice || 0);
                     const qty = Math.abs(Number(pos.qty || 0));
                     const funding = Number(pos.avgEntryFundingValue || 0);
+                    const fundingDisplay = funding >= 0 ? `+$${funding.toFixed(6)}` : `-$${Math.abs(funding).toFixed(6)}`;
+
+                    let rawSymbol = pos.symbol || 'PERP';
+                    let formattedSymbol = rawSymbol.replace('RUSDPERP', '-R USD Perpetual').replace('PERP', ' Perpetual');
 
                     return `
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3 hover:border-indigo-500/40 transition">
-                            <div class="flex justify-between items-center">
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-sm font-bold text-white">${pos.symbol || 'PERP'}</span>
-                                    <span class="text-[10px] bg-slate-950 px-2 py-0.5 rounded border border-slate-800 text-indigo-300 font-mono">Account #${pos.accountId || 'N/A'}</span>
-                                </div>
-                                <span class="text-xs font-bold px-2.5 py-0.5 rounded border font-mono ${sideColor}">
-                                    ${sideLabel}
-                                </span>
+                        <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-4 space-y-2 hover:border-indigo-500/40 transition">
+                            <div class="flex justify-between items-center border-b border-slate-800/50 pb-2">
+                                <span class="text-sm font-bold text-white tracking-wide">Asset: ${formattedSymbol}</span>
+                                <span class="text-[10px] bg-slate-900 px-2 py-0.5 rounded border border-slate-800 text-indigo-300 font-mono">Account #${pos.accountId || 'N/A'}</span>
                             </div>
-
-                            <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-800/60 text-xs font-mono">
-                                <div>
-                                    <span class="text-slate-500 block text-[10px]">Position Size</span>
-                                    <span class="text-white font-semibold">${qty.toLocaleString()} units</span>
-                                </div>
-                                <div>
-                                    <span class="text-slate-500 block text-[10px]">Avg Entry Price</span>
-                                    <span class="text-indigo-300 font-semibold">$${entryPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}</span>
-                                </div>
-                                <div>
-                                    <span class="text-slate-500 block text-[10px]">Accrued Funding</span>
-                                    <span class="${funding >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-semibold">
-                                        $${funding.toFixed(4)}
-                                    </span>
-                                </div>
-                            </div>
+                            <ul class="space-y-1.5 text-xs font-mono text-slate-300 pl-2">
+                                <li>• Side: <span class="font-semibold text-emerald-400">${sideDisplay}</span></li>
+                                <li>• Position Size: <span class="text-white font-bold">${qty.toLocaleString()}</span></li>
+                                <li>• Avg. Entry Price: <span class="text-indigo-300 font-semibold">$${entryPrice.toLocaleString(undefined, {minimumFractionDigits: 6, maximumFractionDigits: 6})}</span></li>
+                                <li>• Avg. Funding Value: <span class="${funding >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-semibold">${fundingDisplay}</span></li>
+                            </ul>
                         </div>
                     `;
                 }).join('');
@@ -401,7 +386,7 @@
                             <span class="text-[10px] text-slate-500 font-mono">${address}</span>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            ${cardsHtml}
+                            ${listHtml}
                         </div>
                     </div>
                 `;
