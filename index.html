@@ -334,9 +334,7 @@
             output.innerHTML = `Querying Reya L2 state for ${address}...`;
 
             try {
-                // Use safeFetch which automatically tries direct API, then falls back to CORS proxy
                 const positionsData = await safeFetch(`${API_BASE}/wallet/${address}/positions`);
-                
                 const positions = Array.isArray(positionsData) ? positionsData : (positionsData?.positions || positionsData?.result || []);
 
                 if (!positions || positions.length === 0) {
@@ -350,3 +348,8 @@
                 output.innerHTML = `<span class="text-amber-400">No active positions found or account uninitialized on Reya L2 for this address.</span>`;
             }
         }
+
+        window.onload = fetchAllData;
+    </script>
+</body>
+</html>
