@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-950">
+<html lang="en" class="h-full bg-[#070B14]">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reya Risk & Market Analytics Matrix</title>
+    <title>Reya Risk Matrix | L2 Analytics & Margin Simulator</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -12,31 +12,58 @@
                 extend: {
                     colors: {
                         reya: {
-                            base: '#0B0F17',
-                            card: '#131B2A',
+                            base: '#070B14',
+                            card: '#0E1526',
+                            cardHover: '#131D35',
                             accent: '#6366F1',
                             emerald: '#10B981',
-                            rose: '#F43F5E'
+                            emeraldGlow: '#00FF9D',
+                            rose: '#F43F5E',
+                            cyan: '#06B6D4'
                         }
+                    },
+                    boxShadow: {
+                        'neon': '0 0 25px -5px rgba(16, 185, 129, 0.15)',
+                        'indigo-glow': '0 0 30px -5px rgba(99, 102, 241, 0.2)'
                     }
                 }
             }
         }
     </script>
+    <style>
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.97); }
+        }
+        .animate-pulse-slow {
+            animation: pulse-slow 4s infinite ease-in-out;
+        }
+    </style>
 </head>
-<body class="h-full text-slate-200 font-sans antialiased flex flex-col justify-between">
+<body class="h-full text-slate-200 font-sans antialiased flex flex-col justify-between selection:bg-emerald-500 selection:text-slate-950">
 
     <!-- Top Navigation Header -->
-    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <header class="border-b border-slate-800/80 bg-[#070B14]/90 backdrop-blur-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
             <div class="flex items-center space-x-3">
-                <div class="w-3 h-3 rounded-full bg-indigo-500 animate-ping"></div>
-                <h1 class="text-xl font-bold tracking-tight text-white">Reya <span class="text-indigo-400">Risk Matrix</span></h1>
-                <span class="text-xs bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-md font-mono">v2 REST API</span>
+                <!-- Reya Octopus / Orderbook Node Motif -->
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500/20 to-indigo-600/20 border border-emerald-500/40 flex items-center justify-center shadow-neon">
+                    <span class="text-lg">🐙</span>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <h1 class="text-lg font-bold tracking-tight text-white">Reya <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">Risk Matrix</span></h1>
+                        <span class="text-[10px] bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 px-2 py-0.5 rounded-full font-mono uppercase tracking-wider">v2 L2 Core</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Community Orderbook & Risk Intelligence</p>
+                </div>
             </div>
-            <div class="flex items-center space-x-4 text-xs text-slate-400">
-                <span>Network: <strong class="text-slate-200">Reya L2 (Chain ID 1729)</strong></span>
-                <button onclick="fetchAllData()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-3 py-1.5 rounded-lg transition flex items-center space-x-1 shadow-md">
+            <div class="flex items-center space-x-4 text-xs">
+                <div class="hidden sm:flex items-center space-x-2 bg-[#0E1526] px-3 py-1.5 rounded-lg border border-slate-800/80 font-mono text-slate-300">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Chain: <strong class="text-white">Reya L2 (1729)</strong></span>
+                </div>
+                <button onclick="fetchAllData()" class="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-bold px-4 py-2 rounded-xl transition-all duration-300 shadow-neon flex items-center space-x-1.5 text-xs">
                     <span>↻ Refresh Feeds</span>
                 </button>
             </div>
@@ -44,105 +71,117 @@
     </header>
 
     <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 py-8 w-full flex-grow space-y-8">
+    <main class="max-w-7xl mx-auto px-4 py-8 w-full flex-grow space-y-10">
 
         <!-- Error & Status Container -->
         <div id="status-banner" class="hidden p-4 rounded-xl text-sm border"></div>
 
         <!-- Section 1: Market Intelligence & Risk Specs -->
-        <section class="space-y-4">
-            <div class="flex justify-between items-end">
+        <section class="space-y-5">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2 border-b border-slate-800/60 pb-4">
                 <div>
-                    <h2 class="text-lg font-bold text-white">Perpetual Market Overview</h2>
-                    <p class="text-xs text-slate-400">Real-time mark prices, funding rates, and leverage limits directly from Reya's node API.</p>
+                    <h2 class="text-xl font-extrabold text-white tracking-tight flex items-center space-x-2">
+                        <span>Perpetual Market Overview</span>
+                        <span class="text-xs bg-slate-900 border border-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono">34 Markets</span>
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Real-time mark prices, funding rates, and leverage limits streamed directly from Reya node API.</p>
+                </div>
+                <div class="text-xs text-slate-400 font-mono">
+                    Data Source: <code class="text-emerald-400">api.reya.xyz/v2</code>
                 </div>
             </div>
 
-            <div id="markets-loading" class="text-center py-12 text-slate-500 font-mono text-sm bg-slate-900/40 rounded-2xl border border-slate-800">
-                Establishing handshake with api.reya.xyz...
+            <div id="markets-loading" class="text-center py-16 text-slate-400 font-mono text-xs bg-[#0E1526]/40 rounded-2xl border border-slate-800/80 flex flex-col items-center justify-center space-y-3">
+                <div class="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                <span>Establishing secure handshake with Reya L2 node API...</span>
             </div>
 
-            <div id="markets-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+            <div id="markets-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 hidden">
                 <!-- Market cards populated dynamically -->
             </div>
         </section>
 
         <!-- Section 2: Position Risk & Liquidation Simulator -->
-        <section class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
-            <div>
-                <h2 class="text-lg font-bold text-white">Interactive Position Margin Simulator</h2>
-                <p class="text-xs text-slate-400">Estimate leverage utilization, margin buffer, and estimated liquidation thresholds without signing transactions.</p>
+        <section class="bg-gradient-to-b from-[#0E1526] to-[#0A0F1D] border border-slate-800/80 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div class="relative z-10">
+                <h2 class="text-xl font-extrabold text-white tracking-tight">Interactive Position Margin Simulator</h2>
+                <p class="text-xs text-slate-400 mt-0.5">Estimate leverage utilization, margin buffer, and simulated liquidation thresholds without signing transactions.</p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
                 <!-- Inputs -->
-                <div class="space-y-4 lg:col-span-1 border-r-0 lg:border-r border-slate-800 lg:pr-6">
+                <div class="space-y-5 lg:col-span-1 lg:border-r border-slate-800/80 lg:pr-8">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Target Market</label>
-                        <select id="sim-market-select" onchange="calculateSimulation()" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Target Market</label>
+                        <select id="sim-market-select" onchange="calculateSimulation()" class="w-full bg-[#070B14] border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-emerald-500 transition font-mono">
                             <!-- Populated dynamically -->
                         </select>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Position Direction</label>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Position Direction</label>
                         <div class="grid grid-cols-2 gap-2">
-                            <button id="btn-side-long" onclick="setSide('LONG')" class="py-2 text-xs font-bold rounded-lg border bg-emerald-950/80 border-emerald-600 text-emerald-400">LONG</button>
-                            <button id="btn-side-short" onclick="setSide('SHORT')" class="py-2 text-xs font-bold rounded-lg border bg-slate-950 border-slate-800 text-slate-400">SHORT</button>
+                            <button id="btn-side-long" onclick="setSide('LONG')" class="py-2.5 text-xs font-bold rounded-xl border transition-all bg-emerald-950/80 border-emerald-600/80 text-emerald-400 shadow-neon">🟢 LONG</button>
+                            <button id="btn-side-short" onclick="setSide('SHORT')" class="py-2.5 text-xs font-bold rounded-xl border transition-all bg-[#070B14] border-slate-800 text-slate-400 hover:text-slate-200">🔴 SHORT</button>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Collateral Deposit (rUSD)</label>
-                        <input id="sim-collateral" type="number" value="1000" oninput="calculateSimulation()" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-indigo-500" placeholder="1000">
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Collateral Deposit (rUSD)</label>
+                        <input id="sim-collateral" type="number" value="1000" oninput="calculateSimulation()" class="w-full bg-[#070B14] border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-emerald-500 transition font-mono" placeholder="1000">
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Position Leverage (<span id="sim-lev-val">5</span>x)</label>
-                        <input id="sim-leverage" type="range" min="1" max="20" value="5" oninput="updateLeverageVal(); calculateSimulation()" class="w-full accent-indigo-500">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Position Leverage</label>
+                            <span id="sim-lev-val" class="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/60">5x</span>
+                        </div>
+                        <input id="sim-leverage" type="range" min="1" max="20" value="5" oninput="updateLeverageVal(); calculateSimulation()" class="w-full accent-emerald-500 cursor-pointer">
                     </div>
                 </div>
 
                 <!-- Simulation Output Matrix -->
                 <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 my-auto">
-                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
-                        <span class="text-xs text-slate-400 block">Notional Position Size</span>
-                        <span id="res-notional" class="text-xl font-mono font-bold text-white">$5,000.00</span>
+                    <div class="bg-[#070B14]/90 p-5 rounded-2xl border border-slate-800/80 space-y-1.5 shadow-lg">
+                        <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Notional Position Size</span>
+                        <span id="res-notional" class="text-2xl font-mono font-extrabold text-white tracking-tight">$5,000.00</span>
                     </div>
 
-                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
-                        <span class="text-xs text-slate-400 block">Current Mark Price</span>
-                        <span id="res-mark" class="text-xl font-mono font-bold text-indigo-400">$0.00</span>
+                    <div class="bg-[#070B14]/90 p-5 rounded-2xl border border-slate-800/80 space-y-1.5 shadow-lg">
+                        <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Current Mark Price</span>
+                        <span id="res-mark" class="text-2xl font-mono font-extrabold text-cyan-400 tracking-tight">$0.00</span>
                     </div>
 
-                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
-                        <span class="text-xs text-slate-400 block">Est. Liquidation Price</span>
-                        <span id="res-liq" class="text-xl font-mono font-bold text-rose-400">$0.00</span>
+                    <div class="bg-[#070B14]/90 p-5 rounded-2xl border border-slate-800/80 space-y-1.5 shadow-lg">
+                        <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Est. Liquidation Price</span>
+                        <span id="res-liq" class="text-2xl font-mono font-extrabold text-rose-400 tracking-tight">$0.00</span>
                     </div>
 
-                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
-                        <span class="text-xs text-slate-400 block">Initial Margin Requirement</span>
-                        <span id="res-margin" class="text-xl font-mono font-bold text-emerald-400">$1,000.00</span>
+                    <div class="bg-[#070B14]/90 p-5 rounded-2xl border border-slate-800/80 space-y-1.5 shadow-lg">
+                        <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Initial Margin Requirement</span>
+                        <span id="res-margin" class="text-2xl font-mono font-extrabold text-emerald-400 tracking-tight">$1,000.00</span>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- Section 3: Read-Only Public Wallet Position Audit -->
-        <section class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
+        <section class="bg-gradient-to-b from-[#0E1526] to-[#0A0F1D] border border-slate-800/80 rounded-2xl p-6 sm:p-8 space-y-5 shadow-2xl">
             <div>
-                <h2 class="text-lg font-bold text-white">Read-Only Wallet Position Audit</h2>
-                <p class="text-xs text-slate-400">Enter any public Ethereum address to inspect open positions on Reya L2 without connecting a wallet.</p>
+                <h2 class="text-xl font-extrabold text-white tracking-tight">Read-Only Wallet Position Audit</h2>
+                <p class="text-xs text-slate-400 mt-0.5">Enter any public Ethereum address to inspect open positions on Reya L2 securely without connecting a wallet.</p>
             </div>
 
             <div class="flex flex-col sm:flex-row gap-3">
-                <input id="wallet-address-input" type="text" placeholder="0x..." class="flex-grow bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-mono text-white focus:outline-none focus:border-indigo-500">
-                <button onclick="fetchWalletPositions()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-6 py-3 rounded-xl transition text-sm">
-                    Inspect Wallet
+                <input id="wallet-address-input" type="text" placeholder="Enter Ethereum address (0x...)" class="flex-grow bg-[#070B14] border border-slate-800 rounded-xl px-4 py-3.5 text-sm font-mono text-white focus:outline-none focus:border-emerald-500 transition shadow-inner">
+                <button onclick="fetchWalletPositions()" class="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold px-7 py-3.5 rounded-xl transition-all duration-300 text-sm shadow-indigo-glow flex items-center justify-center space-x-2">
+                    <span>Inspect Wallet 🐙</span>
                 </button>
             </div>
 
-            <div id="wallet-output" class="hidden text-xs font-mono bg-slate-950 p-4 rounded-xl border border-slate-800 overflow-x-auto text-slate-300">
+            <div id="wallet-output" class="hidden text-xs font-mono bg-[#070B14] p-5 rounded-2xl border border-slate-800/80 overflow-x-auto text-slate-300 shadow-inner">
                 <!-- Wallet results rendered here -->
             </div>
         </section>
@@ -150,8 +189,14 @@
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-slate-800 bg-slate-900/40 py-6 text-center text-xs text-slate-500">
-        Open-source community tool built for Reya Network (@Reya_Network). Powered by public REST APIs.
+    <footer class="border-t border-slate-800/80 bg-[#070B14] py-8 text-center text-xs text-slate-500 space-y-2">
+        <div class="flex items-center justify-center space-x-2">
+            <span class="text-base">🐙</span>
+            <span class="font-semibold text-slate-400">Reya Risk Matrix</span>
+            <span>•</span>
+            <span class="text-slate-400">Community Orderbook Analytics</span>
+        </div>
+        <p>Built for Reya Network (<a href="https://x.com/Reya_Network" target="_blank" class="text-emerald-400 hover:underline">@Reya_Network</a>). Powered by public L2 REST nodes.</p>
     </footer>
 
     <!-- Main Application JavaScript Logic -->
@@ -247,21 +292,21 @@
         function renderMarkets(markets) {
             const grid = document.getElementById('markets-grid');
             grid.innerHTML = markets.map(m => `
-                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-4 hover:border-indigo-500/50 transition shadow-lg">
+                <div class="bg-[#0E1526]/90 hover:bg-[#131D35] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl p-5 space-y-4 transition-all duration-300 shadow-xl group">
                     <div class="flex justify-between items-start">
                         <div>
-                            <span class="text-xs font-mono text-indigo-400">ID: ${m.id}</span>
-                            <h3 class="text-lg font-bold text-white">${m.symbol}</h3>
+                            <span class="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-900/60">ID #${m.id}</span>
+                            <h3 class="text-base font-extrabold text-white mt-1 group-hover:text-emerald-300 transition">${m.symbol}</h3>
                         </div>
-                        <span class="text-xs bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300 font-mono">${m.maxLeverage}x Max Lev</span>
+                        <span class="text-xs bg-[#070B14] px-2.5 py-1 rounded-xl border border-slate-800 text-slate-300 font-mono font-semibold">${m.maxLeverage}x Max Lev</span>
                     </div>
-                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/60 font-mono text-xs">
+                    <div class="grid grid-cols-2 gap-2 pt-3 border-t border-slate-800/60 font-mono text-xs">
                         <div>
-                            <span class="text-slate-500 block">Mark Price</span>
+                            <span class="text-slate-500 block text-[10px] uppercase font-sans">Mark Price</span>
                             <span class="text-white text-sm font-bold">$${m.markPrice.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
                         </div>
                         <div>
-                            <span class="text-slate-500 block">Funding Rate</span>
+                            <span class="text-slate-500 block text-[10px] uppercase font-sans">Funding Rate</span>
                             <span class="${m.fundingRate >= 0 ? 'text-emerald-400' : 'text-rose-400'} text-sm font-bold">${(m.fundingRate * 100).toFixed(4)}%</span>
                         </div>
                     </div>
@@ -281,18 +326,18 @@
             const btnLong = document.getElementById('btn-side-long');
             const btnShort = document.getElementById('btn-side-short');
             if (side === 'LONG') {
-                btnLong.className = "py-2 text-xs font-bold rounded-lg border bg-emerald-950/80 border-emerald-600 text-emerald-400";
-                btnShort.className = "py-2 text-xs font-bold rounded-lg border bg-slate-950 border-slate-800 text-slate-400";
+                btnLong.className = "py-2.5 text-xs font-bold rounded-xl border transition-all bg-emerald-950/80 border-emerald-600/80 text-emerald-400 shadow-neon";
+                btnShort.className = "py-2.5 text-xs font-bold rounded-xl border transition-all bg-[#070B14] border-slate-800 text-slate-400 hover:text-slate-200";
             } else {
-                btnLong.className = "py-2 text-xs font-bold rounded-lg border bg-slate-950 border-slate-800 text-slate-400";
-                btnShort.className = "py-2 text-xs font-bold rounded-lg border bg-rose-950/80 border-rose-600 text-rose-400";
+                btnLong.className = "py-2.5 text-xs font-bold rounded-xl border transition-all bg-[#070B14] border-slate-800 text-slate-400 hover:text-slate-200";
+                btnShort.className = "py-2.5 text-xs font-bold rounded-xl border transition-all bg-rose-950/80 border-rose-600/80 text-rose-400 shadow-neon";
             }
             calculateSimulation();
         }
 
         function updateLeverageVal() {
             const slider = document.getElementById('sim-leverage');
-            document.getElementById('sim-lev-val').textContent = slider.value;
+            document.getElementById('sim-lev-val').textContent = slider.value + 'x';
         }
 
         function calculateSimulation() {
@@ -327,14 +372,14 @@
             output.classList.remove('hidden');
 
             if (!address.startsWith('0x') || address.length < 10) {
-                output.innerHTML = `<span class="text-rose-400">Please enter a valid Ethereum wallet address (0x...).</span>`;
+                output.innerHTML = `<span class="text-rose-400">⚠️ Please enter a valid Ethereum wallet address (0x...).</span>`;
                 return;
             }
 
             output.innerHTML = `
-                <div class="flex items-center space-x-2 text-indigo-400">
-                    <div class="w-2 h-2 rounded-full bg-indigo-500 animate-ping"></div>
-                    <span>Querying live positions on Reya L2 node for ${address.slice(0,6)}...${address.slice(-4)}</span>
+                <div class="flex items-center space-x-2 text-emerald-400">
+                    <div class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></div>
+                    <span>Querying Reya L2 orderbook nodes for ${address.slice(0,6)}...${address.slice(-4)}...</span>
                 </div>
             `;
 
@@ -344,8 +389,8 @@
 
                 if (!positions || positions.length === 0) {
                     output.innerHTML = `
-                        <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl text-amber-400">
-                            No active open positions found on Reya L2 for address <span class="font-mono text-slate-200">${address}</span>.
+                        <div class="p-4 bg-[#070B14] border border-slate-800 rounded-xl text-amber-400">
+                            No active open positions found on Reya L2 for address <span class="font-mono text-white">${address}</span>. (Account may be uninitialized or positions closed).
                         </div>
                     `;
                     return;
@@ -364,15 +409,15 @@
                     let formattedSymbol = rawSymbol.replace('RUSDPERP', '-R USD Perpetual').replace('PERP', ' Perpetual');
 
                     return `
-                        <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-4 space-y-2 hover:border-indigo-500/40 transition">
-                            <div class="flex justify-between items-center border-b border-slate-800/50 pb-2">
-                                <span class="text-sm font-bold text-white tracking-wide">Asset: ${formattedSymbol}</span>
-                                <span class="text-[10px] bg-slate-900 px-2 py-0.5 rounded border border-slate-800 text-indigo-300 font-mono">Account #${pos.accountId || 'N/A'}</span>
+                        <div class="bg-[#070B14] border border-slate-800/90 hover:border-emerald-500/40 rounded-xl p-4 space-y-2.5 transition">
+                            <div class="flex justify-between items-center border-b border-slate-800/60 pb-2">
+                                <span class="text-sm font-extrabold text-white tracking-wide">Asset: ${formattedSymbol}</span>
+                                <span class="text-[10px] bg-[#0E1526] px-2 py-0.5 rounded border border-slate-800 text-emerald-400 font-mono">Account #${pos.accountId || 'N/A'}</span>
                             </div>
-                            <ul class="space-y-1.5 text-xs font-mono text-slate-300 pl-2">
+                            <ul class="space-y-1.5 text-xs font-mono text-slate-300 pl-1">
                                 <li>• Side: <span class="font-semibold text-emerald-400">${sideDisplay}</span></li>
                                 <li>• Position Size: <span class="text-white font-bold">${qty.toLocaleString()}</span></li>
-                                <li>• Avg. Entry Price: <span class="text-indigo-300 font-semibold">$${entryPrice.toLocaleString(undefined, {minimumFractionDigits: 6, maximumFractionDigits: 6})}</span></li>
+                                <li>• Avg. Entry Price: <span class="text-cyan-300 font-semibold">$${entryPrice.toLocaleString(undefined, {minimumFractionDigits: 6, maximumFractionDigits: 6})}</span></li>
                                 <li>• Avg. Funding Value: <span class="${funding >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-semibold">${fundingDisplay}</span></li>
                             </ul>
                         </div>
@@ -381,11 +426,11 @@
 
                 output.innerHTML = `
                     <div class="space-y-3">
-                        <div class="flex justify-between items-center px-1">
+                        <div class="flex justify-between items-center px-1 border-b border-slate-800/60 pb-2">
                             <span class="text-xs font-semibold text-slate-400">Audit Result: <strong class="text-emerald-400">${positions.length} Active Position(s)</strong></span>
                             <span class="text-[10px] text-slate-500 font-mono">${address}</span>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                             ${listHtml}
                         </div>
                     </div>
@@ -393,7 +438,7 @@
 
             } catch (err) {
                 output.innerHTML = `
-                    <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl text-amber-400 text-xs font-mono">
+                    <div class="p-4 bg-[#070B14] border border-slate-800 rounded-xl text-amber-400 text-xs font-mono">
                         No active open positions found or account uninitialized on Reya L2 for address ${address}.
                     </div>
                 `;
