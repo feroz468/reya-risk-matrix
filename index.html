@@ -331,21 +331,87 @@
                 return;
             }
 
-            output.innerHTML = `Querying Reya L2 state for ${address}...`;
+            output.innerHTML = `
+                <div class="flex items-center space-x-2 text-indigo-400">
+                    <div class="w-2 h-2 rounded-full bg-indigo-500 animate-ping"></div>
+                    <span>Querying live positions on Reya L2 node for ${address.slice(0,6)}...${address.slice(-4)}</span>
+                </div>
+            `;
 
             try {
                 const positionsData = await safeFetch(`${API_BASE}/wallet/${address}/positions`);
                 const positions = Array.isArray(positionsData) ? positionsData : (positionsData?.positions || positionsData?.result || []);
 
                 if (!positions || positions.length === 0) {
-                    output.innerHTML = `<span class="text-amber-400">No active positions currently open on Reya L2 for address ${address}. (The account may be uninitialized or positions are closed).</span>`;
+                    output.innerHTML = `
+                        <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl text-amber-400">
+                            No active open positions found on Reya L2 for address <span class="font-mono text-slate-200">${address}</span>.
+                        </div>
+                    `;
                     return;
                 }
 
-                output.innerHTML = `<div class="space-y-2"><strong class="text-emerald-400">Open Positions Found:</strong><pre class="text-slate-300 mt-1 bg-slate-900 p-2 rounded">${JSON.stringify(positions, null, 2)}</pre></div>`;
+                let cardsHtml = positions.map(pos => {
+                    const isLong = pos.side === 'B' || pos.side === 'LONG' || Number(pos.qty) > 0;
+                    const sideLabel = isLong ? 'LONG' : 'SHORT';
+                    const sideColor = isLong 
+                        ? 'bg-emerald-950/80 text-emerald-400 border-emerald-700/50' 
+                        : 'bg-rose-950/80 text-rose-400 border-rose-700/50';
+                    
+                    const entryPrice = Number(pos.avgEntryPrice || 0);
+                    const qty = Math.abs(Number(pos.qty || 0));
+                    const funding = Number(pos.avgEntryFundingValue || 0);
+
+                    return `
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3 hover:border-indigo-500/40 transition">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-sm font-bold text-white">${pos.symbol || 'PERP'}</span>
+                                    <span class="text-[10px] bg-slate-950 px-2 py-0.5 rounded border border-slate-800 text-indigo-300 font-mono">Account #${pos.accountId || 'N/A'}</span>
+                                </div>
+                                <span class="text-xs font-bold px-2.5 py-0.5 rounded border font-mono ${sideColor}">
+                                    ${sideLabel}
+                                </span>
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-800/60 text-xs font-mono">
+                                <div>
+                                    <span class="text-slate-500 block text-[10px]">Position Size</span>
+                                    <span class="text-white font-semibold">${qty.toLocaleString()} units</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500 block text-[10px]">Avg Entry Price</span>
+                                    <span class="text-indigo-300 font-semibold">$${entryPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500 block text-[10px]">Accrued Funding</span>
+                                    <span class="${funding >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-semibold">
+                                        $${funding.toFixed(4)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                output.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center px-1">
+                            <span class="text-xs font-semibold text-slate-400">Audit Result: <strong class="text-emerald-400">${positions.length} Active Position(s)</strong></span>
+                            <span class="text-[10px] text-slate-500 font-mono">${address}</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            ${cardsHtml}
+                        </div>
+                    </div>
+                `;
 
             } catch (err) {
-                output.innerHTML = `<span class="text-amber-400">No active positions found or account uninitialized on Reya L2 for this address.</span>`;
+                output.innerHTML = `
+                    <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl text-amber-400 text-xs font-mono">
+                        No active open positions found or account uninitialized on Reya L2 for address ${address}.
+                    </div>
+                `;
             }
         }
 
