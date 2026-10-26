@@ -100,7 +100,7 @@
             <div class="flex items-center space-x-4 text-xs">
                 <div class="hidden md:flex items-center space-x-2 bg-[#0E1526] px-3 py-1.5 rounded-xl border border-slate-800/80 font-mono text-slate-300">
                     <span class="text-slate-500 text-[11px]">24h Vol:</span>
-                    <strong id="total-volume-display" class="text-emerald-400">$5,192,145</strong>
+                    <strong id="total-volume-display" class="text-emerald-400">$0</strong>
                 </div>
 
                 <div class="hidden sm:flex items-center space-x-2 bg-[#0E1526] px-3 py-1.5 rounded-xl border border-slate-800/80 font-mono text-slate-300">
@@ -113,7 +113,7 @@
                 </button>
 
                 <div class="hidden xl:block text-[11px] font-mono text-slate-400">
-                    <span id="last-updated-time">12:45:32 UTC</span>
+                    <span id="last-updated-time">--:--:-- UTC</span>
                 </div>
             </div>
         </div>
@@ -192,7 +192,6 @@
                             <span>Connecting to Reya L2 nodes...</span>
                         </div>
 
-                        <!-- Horizontal Scrollable Markets Row matching screenshot -->
                         <div id="markets-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3.5 hidden">
                             <!-- Populated dynamically -->
                         </div>
@@ -311,7 +310,7 @@
                             <button onclick="fetchWalletPositions()" class="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 text-slate-950 font-bold px-6 py-3 rounded-xl text-xs transition shadow-neon">View Positions</button>
                         </div>
 
-                        <!-- 4 Audit Feature Pills matching screenshot -->
+                        <!-- 4 Audit Feature Pills -->
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
                             <div class="bg-[#070B14] border border-slate-800/80 p-3 rounded-xl flex items-center space-x-2.5">
                                 <span class="text-emerald-400">🟢</span>
@@ -331,11 +330,12 @@
                             </div>
                         </div>
 
+                        <!-- Wallet Output Container (Detailed Cards Rendered Here) -->
                         <div id="wallet-output" class="hidden text-xs font-mono bg-[#070B14] p-4 rounded-xl border border-slate-800 text-slate-300">
                             <!-- Wallet output -->
                         </div>
 
-                        <!-- Bottom Audit Metrics Bar matching screenshot -->
+                        <!-- Bottom Audit Metrics Bar -->
                         <div class="grid grid-cols-3 gap-3 pt-2 border-t border-slate-800/60 font-mono text-xs">
                             <div class="bg-[#070B14] p-3 rounded-xl border border-slate-800"><span class="text-slate-500 block text-[10px]">Total Positions</span><span id="audit-total-pos" class="text-white font-bold text-sm">0</span></div>
                             <div class="bg-[#070B14] p-3 rounded-xl border border-slate-800"><span class="text-slate-500 block text-[10px]">Total Notional Value</span><span id="audit-total-notional" class="text-emerald-400 font-bold text-sm">$0.00</span></div>
@@ -699,25 +699,77 @@
                 return;
             }
 
-            output.innerHTML = `Querying Reya L2 orderbook nodes for ${address}...`;
+            output.innerHTML = `
+                <div class="flex items-center space-x-2 text-emerald-400">
+                    <div class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></div>
+                    <span>Querying Reya L2 orderbook nodes for ${address.slice(0,6)}...${address.slice(-4)}...</span>
+                </div>
+            `;
 
             try {
                 const positionsData = await safeFetch(`${API_BASE}/wallet/${address}/positions`);
-                const positions = Array.isArray(positionsData) ? positionsData : (positionsData?.positions || []);
+                const positions = Array.isArray(positionsData) ? positionsData : (positionsData?.positions || positionsData?.result || []);
 
                 document.getElementById('audit-total-pos').textContent = positions.length;
-                const totalNotional = positions.reduce((sum, p) => sum + (Number(p.qty || 0) * Number(p.avgEntryPrice || 0)), 0);
-                document.getElementById('audit-total-notional').textContent = `$${Math.abs(totalNotional).toLocaleString(undefined, {maximumFractionDigits: 2})}`;
-                document.getElementById('audit-unique-markets').textContent = new Set(positions.map(p => p.symbol)).size;
+                const totalNotional = positions.reduce((sum, p) => sum + (Math.abs(Number(p.qty || 0)) * Number(p.avgEntryPrice || 0)), 0);
+                document.getElementById('audit-total-notional').textContent = `$${totalNotional.toLocaleString(undefined, {maximumFractionDigits: 2})}`;
+                document.getElementById('audit-unique-markets').textContent = new Set(positions.map(p => p.symbol || p.marketId)).size;
 
-                if (positions.length === 0) {
-                    output.innerHTML = `No active open positions found on Reya L2 for address ${address}.`;
+                if (!positions || positions.length === 0) {
+                    output.innerHTML = `
+                        <div class="p-4 bg-[#070B14] border border-slate-800 rounded-xl text-amber-400">
+                            No active open positions found on Reya L2 for address <span class="font-mono text-white">${address}</span>.
+                        </div>
+                    `;
                     return;
                 }
 
-                output.innerHTML = `Found ${positions.length} active position(s).`;
-            } catch (e) {
-                output.innerHTML = `No active open positions or uninitialized account found on Reya L2.`;
+                let listHtml = positions.map(pos => {
+                    const isLong = pos.side === 'B' || pos.side === 'LONG' || Number(pos.qty) > 0;
+                    const sideDisplay = isLong ? '🟢 BUY / LONG' : '🔴 SELL / SHORT';
+                    
+                    const entryPrice = Number(pos.avgEntryPrice || 0);
+                    const qty = Math.abs(Number(pos.qty || 0));
+                    const funding = Number(pos.avgEntryFundingValue || 0);
+                    const fundingDisplay = funding >= 0 ? `+$${funding.toFixed(6)}` : `-$${Math.abs(funding).toFixed(6)}`;
+
+                    let rawSymbol = pos.symbol || `Market #${pos.marketId || 'N/A'}`,
+                        formattedSymbol = rawSymbol.replace('RUSDPERP', '-R USD Perpetual').replace('PERP', ' Perpetual');
+
+                    return `
+                        <div class="bg-[#070B14] border border-slate-800 hover:border-emerald-500/40 rounded-xl p-4 space-y-2.5 transition">
+                            <div class="flex justify-between items-center border-b border-slate-800/60 pb-2">
+                                <span class="text-xs font-extrabold text-white tracking-wide">Asset: ${formattedSymbol}</span>
+                                <span class="text-[10px] bg-[#0E1526] px-2 py-0.5 rounded border border-slate-800 text-emerald-400 font-mono">Account #${pos.accountId || 'N/A'}</span>
+                            </div>
+                            <ul class="space-y-1.5 text-xs font-mono text-slate-300 pl-1">
+                                <li>• Side: <span class="font-semibold text-emerald-400">${sideDisplay}</span></li>
+                                <li>• Position Size: <span class="text-white font-bold">${qty.toLocaleString()}</span></li>
+                                <li>• Avg. Entry Price: <span class="text-cyan-300 font-semibold">$${entryPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 6})}</span></li>
+                                <li>• Avg. Funding Value: <span class="${funding >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-semibold">${fundingDisplay}</span></li>
+                            </ul>
+                        </div>
+                    `;
+                }).join('');
+
+                output.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center px-1 border-b border-slate-800/60 pb-2">
+                            <span class="text-xs font-semibold text-slate-400">Audit Result: <strong class="text-emerald-400">${positions.length} Active Position(s)</strong></span>
+                            <span class="text-[10px] text-slate-500 font-mono">${address.slice(0,6)}...${address.slice(-4)}</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                            ${listHtml}
+                        </div>
+                    </div>
+                `;
+
+            } catch (err) {
+                output.innerHTML = `
+                    <div class="p-4 bg-[#070B14] border border-slate-800 rounded-xl text-amber-400 text-xs font-mono">
+                        No active open positions found or account uninitialized on Reya L2 for address ${address}.
+                    </div>
+                `;
             }
         }
 
