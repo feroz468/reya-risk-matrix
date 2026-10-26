@@ -58,11 +58,19 @@
                     <p class="text-[11px] text-slate-400">Community Orderbook & Risk Intelligence</p>
                 </div>
             </div>
-            <div class="flex items-center space-x-4 text-xs">
-                <div class="hidden sm:flex items-center space-x-2 bg-[#0E1526] px-3 py-1.5 rounded-lg border border-slate-800/80 font-mono text-slate-300">
+            
+            <div class="flex items-center space-x-3 text-xs">
+                <!-- Total 24h Volume Widget -->
+                <div class="hidden md:flex items-center space-x-2 bg-[#0E1526] px-3 py-1.5 rounded-xl border border-slate-800/80 font-mono text-slate-300">
+                    <span class="text-slate-500 text-[11px]">24h Vol:</span>
+                    <strong id="total-volume-display" class="text-emerald-400">$0</strong>
+                </div>
+
+                <div class="hidden sm:flex items-center space-x-2 bg-[#0E1526] px-3 py-1.5 rounded-xl border border-slate-800/80 font-mono text-slate-300">
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                     <span>Chain: <strong class="text-white">Reya L2 (1729)</strong></span>
                 </div>
+
                 <button onclick="fetchAllData()" class="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-bold px-4 py-2 rounded-xl transition-all duration-300 shadow-neon flex items-center space-x-1.5 text-xs">
                     <span>↻ Refresh Feeds</span>
                 </button>
@@ -84,7 +92,7 @@
                         <span>Perpetual Market Overview</span>
                         <span class="text-xs bg-slate-900 border border-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono">34 Markets</span>
                     </h2>
-                    <p class="text-xs text-slate-400 mt-0.5">Real-time mark prices, funding rates, and leverage limits streamed directly from Reya node API.</p>
+                    <p class="text-xs text-slate-400 mt-0.5">Real-time mark prices, funding rates, and 24h rolling volume streamed directly from Reya node API.</p>
                 </div>
                 <div class="text-xs text-slate-400 font-mono">
                     Data Source: <code class="text-emerald-400">api.reya.xyz/v2</code>
@@ -96,18 +104,26 @@
                 <span>Establishing secure handshake with Reya L2 node API...</span>
             </div>
 
-            <div id="markets-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 hidden">
+            <div id="markets-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 hidden">
                 <!-- Market cards populated dynamically -->
             </div>
         </section>
 
         <!-- Section 2: Position Risk & Liquidation Simulator -->
-        <section class="bg-gradient-to-b from-[#0E1526] to-[#0A0F1D] border border-slate-800/80 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
+        <section class="bg-gradient-to-b from-[#0E1526] to-[#0A0F1D] border border-slate-800/80 rounded-2xl p-5 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
             <div class="absolute top-0 right-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
             
             <div class="relative z-10">
                 <h2 class="text-xl font-extrabold text-white tracking-tight">Interactive Position Margin Simulator</h2>
                 <p class="text-xs text-slate-400 mt-0.5">Estimate leverage utilization, margin buffer, and simulated liquidation thresholds without signing transactions.</p>
+            </div>
+
+            <!-- Reya Mod Disclaimer Note -->
+            <div class="bg-amber-950/40 border border-amber-800/60 rounded-xl p-3.5 text-xs text-amber-300 flex items-start space-x-2.5 relative z-10">
+                <span class="text-base leading-none">⚠️</span>
+                <p>
+                    <strong class="font-semibold text-amber-200">Risk Disclaimer:</strong> Liquidations on Reya are triggered by mark price and may occur as partial liquidations based on total protocol margin requirements. Calculations in this tool are approximate simulations for educational purposes and should not be used as execution guarantees.
+                </p>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
@@ -161,14 +177,14 @@
 
                     <div class="bg-[#070B14]/90 p-5 rounded-2xl border border-slate-800/80 space-y-1.5 shadow-lg">
                         <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Initial Margin Requirement</span>
-                        <span id="res-margin" class="text-2xl font-mono font-extrabold text-emerald-400 tracking-tight">$1,000.00</span>
+                        <span id="res-margin" class="text-2xl font-mono font-bold text-emerald-400 tracking-tight">$1,000.00</span>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- Section 3: Read-Only Public Wallet Position Audit -->
-        <section class="bg-gradient-to-b from-[#0E1526] to-[#0A0F1D] border border-slate-800/80 rounded-2xl p-6 sm:p-8 space-y-5 shadow-2xl">
+        <section class="bg-gradient-to-b from-[#0E1526] to-[#0A0F1D] border border-slate-800/80 rounded-2xl p-5 sm:p-8 space-y-5 shadow-2xl">
             <div>
                 <h2 class="text-xl font-extrabold text-white tracking-tight">Read-Only Wallet Position Audit</h2>
                 <p class="text-xs text-slate-400 mt-0.5">Enter any public Ethereum address to inspect open positions on Reya L2 securely without connecting a wallet.</p>
@@ -196,7 +212,7 @@
             <span>•</span>
             <span class="text-slate-400">Community Orderbook Analytics</span>
         </div>
-        <p>Built for Reya Network (<a href="https://x.com/Reya_Network" target="_blank" class="text-emerald-400 hover:underline">@Reya_Network</a>). Powered by public L2 REST nodes.</p>
+        <p>Built for Reya Network (<a href="https://x.com/Reya_Network" target="_blank" class="text-emerald-400 hover:underline">@Reya_Network</a>). Powered by public L2 REST nodes. Released under MIT License.</p>
     </footer>
 
     <!-- Main Application JavaScript Logic -->
@@ -251,17 +267,22 @@
                         symbol: symbol,
                         markPrice: Number(summary.markPrice || summary.price || m.markPrice || 0),
                         fundingRate: Number(summary.fundingRate || m.fundingRate || 0.0001),
-                        maxLeverage: Number(m.maxLeverage || m.leverageLimit || 20)
+                        maxLeverage: Number(m.maxLeverage || m.leverageLimit || 20),
+                        volume24h: Number(summary.volume24h || summary.volume || 0)
                     };
                 });
 
                 if (marketState.length === 0) {
                     marketState = [
-                        { id: 1, symbol: 'ETH-PERP', markPrice: 2650.00, fundingRate: 0.00012, maxLeverage: 20 },
-                        { id: 2, symbol: 'BTC-PERP', markPrice: 68400.00, fundingRate: 0.00008, maxLeverage: 20 },
-                        { id: 3, symbol: 'SOL-PERP', markPrice: 145.50, fundingRate: 0.00020, maxLeverage: 10 }
+                        { id: 1, symbol: 'ETH-PERP', markPrice: 2650.00, fundingRate: 0.00012, maxLeverage: 20, volume24h: 1900000 },
+                        { id: 2, symbol: 'BTC-PERP', markPrice: 68400.00, fundingRate: 0.00008, maxLeverage: 20, volume24h: 1300000 },
+                        { id: 3, symbol: 'SOL-PERP', markPrice: 145.50, fundingRate: 0.00020, maxLeverage: 10, volume24h: 900000 }
                     ];
                 }
+
+                // Calculate Total Network 24h Volume
+                const totalVolume24h = marketState.reduce((sum, m) => sum + m.volume24h, 0);
+                document.getElementById('total-volume-display').textContent = `$${totalVolume24h.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
 
                 renderMarkets(marketState);
                 populateSimulatorDropdown(marketState);
@@ -278,10 +299,14 @@
                 banner.classList.remove('hidden');
 
                 marketState = [
-                    { id: 1, symbol: 'ETH-PERP', markPrice: 2650.00, fundingRate: 0.00012, maxLeverage: 20 },
-                    { id: 2, symbol: 'BTC-PERP', markPrice: 68400.00, fundingRate: 0.00008, maxLeverage: 20 },
-                    { id: 3, symbol: 'SOL-PERP', markPrice: 145.50, fundingRate: 0.00020, maxLeverage: 10 }
+                    { id: 1, symbol: 'ETH-PERP', markPrice: 2650.00, fundingRate: 0.00012, maxLeverage: 20, volume24h: 1900000 },
+                    { id: 2, symbol: 'BTC-PERP', markPrice: 68400.00, fundingRate: 0.00008, maxLeverage: 20, volume24h: 1300000 },
+                    { id: 3, symbol: 'SOL-PERP', markPrice: 145.50, fundingRate: 0.00020, maxLeverage: 10, volume24h: 900000 }
                 ];
+                
+                const totalVolume24h = marketState.reduce((sum, m) => sum + m.volume24h, 0);
+                document.getElementById('total-volume-display').textContent = `$${totalVolume24h.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
+
                 renderMarkets(marketState);
                 populateSimulatorDropdown(marketState);
                 calculateSimulation();
@@ -300,6 +325,7 @@
                         </div>
                         <span class="text-xs bg-[#070B14] px-2.5 py-1 rounded-xl border border-slate-800 text-slate-300 font-mono font-semibold">${m.maxLeverage}x Max Lev</span>
                     </div>
+                    
                     <div class="grid grid-cols-2 gap-2 pt-3 border-t border-slate-800/60 font-mono text-xs">
                         <div>
                             <span class="text-slate-500 block text-[10px] uppercase font-sans">Mark Price</span>
@@ -309,6 +335,12 @@
                             <span class="text-slate-500 block text-[10px] uppercase font-sans">Funding Rate</span>
                             <span class="${m.fundingRate >= 0 ? 'text-emerald-400' : 'text-rose-400'} text-sm font-bold">${(m.fundingRate * 100).toFixed(4)}%</span>
                         </div>
+                    </div>
+
+                    <!-- 24h Volume Row -->
+                    <div class="pt-2 border-t border-slate-800/40 flex justify-between items-center text-xs font-mono">
+                        <span class="text-slate-500 text-[10px] uppercase">24h Volume</span>
+                        <span class="text-slate-200 font-bold">$${m.volume24h.toLocaleString(undefined, {maximumFractionDigits: 0})}</span>
                     </div>
                 </div>
             `).join('');
